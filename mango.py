@@ -142,17 +142,18 @@ rows_to_write = qualified_rows[:campaign_limit]
 for r in rows_to_write:
   r[indexes['campaign_num']] = 3
 
-# for r in qualified_rows:
-#   print "------ qualified row --------"
-#   print "name", r[0], r[1]
-#   print "state", r[indexes['state']]
-#   print "company", r[indexes['company']]
-#   print "type", r[indexes['type']]
-#   print "email", r[indexes['email']]
-#   print "phone", r[indexes['phone']]
-#   print "campaign_num", r[indexes['campaign_num']]
-#   print "------ end row --------"
-#   print ""
+for i, r in enumerate(qualified_rows):
+  print "------ qualified row --------"
+  print "name", r[0], r[1]
+  print "state", r[indexes['state']]
+  print "company", r[indexes['company']]
+  print "type", r[indexes['type']]
+  print "email", r[indexes['email']]
+  print "phone", r[indexes['phone']]
+  print "campaign_num", r[indexes['campaign_num']]
+  print "------ end row --------"
+  print ""
+
 with open(inputs.output_file, 'wb') as output_file:
   writer = csv.writer(output_file)
   writer.writerows(csv_rows)
