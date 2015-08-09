@@ -1,16 +1,28 @@
 #!/usr/bin/python
 
-import csv, sys
+import csv, sys, argparse
+
+#####
+# parse args
+#####
+
+parser = argparse.ArgumentParser(description="This software is to help you find the correct contacts.")
+parser.add_argument('-input-csv', dest="seed_data_file",
+                    help="[ REQUIRED ] Name of CSV file. This file provides the original data.")
+parser.add_argument('-state', dest="state",
+                    help="[ REQUIRED ] State abbreviation, not full state name.")
+parser.add_argument('-company', dest="company",
+                    help="[ optional ] Company name.")
+parser.add_argument('-type', dest="type",
+                    help="[ REQUIRED ] Type, must be either 'Independent' or 'Captive'.")
+parser.add_argument('-output-name', dest="output_file",
+                    help="[ optional ] Output file name. Defaults to 'output.csv'.")
 
 #####
 # init
 #####
 
-INPUT_FILE = sys.argv[1]
-INPUT_STATE_ABBR = sys.argv[2]
-INPUT_COMPANY = sys.argv[3]
-INPUT_TYPE = sys.argv[4]
-INPUT_DESIRED_OUTPUT_FILENAME = sys.argv[5]
+inputs = parser.parse_args()
 
 states = {
   'AK': 'Alaska',
@@ -72,13 +84,13 @@ states = {
   'WY': 'Wyoming'
 }
 
-INPUT_STATE = states[INPUT_STATE_ABBR]
+inputs.state = states[inputs.state]
 
 #####
 # setup
 ####
 
-csv_file = csv.reader(open(INPUT_FILE))
+csv_file = csv.reader(open(inputs.seed_data_file))
 
 csv_rows = []
 for row in csv_file:
@@ -99,13 +111,13 @@ indexes['campaign_num'] = 10
 ####
 
 def same_state(target, test):
-  return target['state'] == test[indexes['state']]
+  return target.state == test[indexes['state']]
 
 def correct_company_and_type(target, test):
-  if target['type'] == "Independent":
+  if target.type == "Independent":
     return test[indexes['type']] == "Independent"
   else:
-    return target['company'] == test[indexes['company']]
+    return target.company == test[indexes['company']]
 
 def contact_info_exists(target, test):
   return test[indexes['phone']] != "" and test[indexes['email']] != ""
@@ -119,23 +131,28 @@ def is_qualified(target, test):
     contact_info_exists(target, test) and \
     not_previous_campaign(target, test)
 
-input = {
-  'state': INPUT_STATE,
-  'company': INPUT_COMPANY,
-  'type': INPUT_TYPE
-}
-
-if INPUT_TYPE == "Independent":
+if inputs.type == "Independent":
   campaign_limit = 3
 else:
   campaign_limit = 1
 
-qualified_rows = [row for row in csv_rows if is_qualified(input, row)]
+qualified_rows = [row for row in csv_rows if is_qualified(inputs, row)]
 
 rows_to_write = qualified_rows[:campaign_limit]
 for r in rows_to_write:
   r[indexes['campaign_num']] = 3
 
-with open(INPUT_DESIRED_OUTPUT_FILENAME, 'wb') as output_file:
+# for r in qualified_rows:
+#   print "------ qualified row --------"
+#   print "name", r[0], r[1]
+#   print "state", r[indexes['state']]
+#   print "company", r[indexes['company']]
+#   print "type", r[indexes['type']]
+#   print "email", r[indexes['email']]
+#   print "phone", r[indexes['phone']]
+#   print "campaign_num", r[indexes['campaign_num']]
+#   print "------ end row --------"
+#   print ""
+with open(inputs.output_file, 'wb') as output_file:
   writer = csv.writer(output_file)
   writer.writerows(csv_rows)
