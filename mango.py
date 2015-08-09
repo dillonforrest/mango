@@ -1,10 +1,83 @@
-import csv
+#!/usr/bin/python
+
+import csv, sys
+
+#####
+# init
+#####
+
+INPUT_FILE = sys.argv[1]
+INPUT_STATE_ABBR = sys.argv[2]
+INPUT_COMPANY = sys.argv[3]
+INPUT_TYPE = sys.argv[4]
+
+states = {
+  'AK': 'Alaska',
+  'AL': 'Alabama',
+  'AR': 'Arkansas',
+  'AS': 'American Samoa',
+  'AZ': 'Arizona',
+  'CA': 'California',
+  'CO': 'Colorado',
+  'CT': 'Connecticut',
+  'DC': 'District of Columbia',
+  'DE': 'Delaware',
+  'FL': 'Florida',
+  'GA': 'Georgia',
+  'GU': 'Guam',
+  'HI': 'Hawaii',
+  'IA': 'Iowa',
+  'ID': 'Idaho',
+  'IL': 'Illinois',
+  'IN': 'Indiana',
+  'KS': 'Kansas',
+  'KY': 'Kentucky',
+  'LA': 'Louisiana',
+  'MA': 'Massachusetts',
+  'MD': 'Maryland',
+  'ME': 'Maine',
+  'MI': 'Michigan',
+  'MN': 'Minnesota',
+  'MO': 'Missouri',
+  'MP': 'Northern Mariana Islands',
+  'MS': 'Mississippi',
+  'MT': 'Montana',
+  'NA': 'National',
+  'NC': 'North Carolina',
+  'ND': 'North Dakota',
+  'NE': 'Nebraska',
+  'NH': 'New Hampshire',
+  'NJ': 'New Jersey',
+  'NM': 'New Mexico',
+  'NV': 'Nevada',
+  'NY': 'New York',
+  'OH': 'Ohio',
+  'OK': 'Oklahoma',
+  'OR': 'Oregon',
+  'PA': 'Pennsylvania',
+  'PR': 'Puerto Rico',
+  'RI': 'Rhode Island',
+  'SC': 'South Carolina',
+  'SD': 'South Dakota',
+  'TN': 'Tennessee',
+  'TX': 'Texas',
+  'UT': 'Utah',
+  'VA': 'Virginia',
+  'VI': 'Virgin Islands',
+  'VT': 'Vermont',
+  'WA': 'Washington',
+  'WI': 'Wisconsin',
+  'WV': 'West Virginia',
+  'WY': 'Wyoming'
+}
+
+INPUT_STATE = states[INPUT_STATE_ABBR]
 
 #####
 # setup
 ####
 
-csv_file = csv.reader(open('auto-insurance.csv'))
+csv_file = csv.reader(open(INPUT_FILE))
 
 csv_rows = []
 for row in csv_file:
@@ -19,19 +92,6 @@ indexes['company'] = 8
 indexes['type'] = 9
 indexes['campaign_num'] = 11
 
-#####
-# TODO: allow inputs
-####
-
-input1 = {}
-input1['state'] = 'Massachusetts'
-input1['company'] = 'Any'
-input1['type'] = 'Independent'
-
-input2 = {}
-input2['state'] = 'Massachusetts'
-input2['company'] = 'MetLife'
-input2['type'] = 'Captive'
 
 #####
 # qualifiers
@@ -57,6 +117,12 @@ def is_qualified(target, test):
     correct_company_and_type(target, test) and \
     contact_info_exists(target, test) and \
     not_previous_campaign(target, test)
+
+input = {
+  'state': INPUT_STATE,
+  'company': INPUT_COMPANY,
+  'type': INPUT_TYPE
+}
 
 for i, row in enumerate(csv_rows):
   if is_qualified(input1, row):
