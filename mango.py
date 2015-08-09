@@ -7,7 +7,7 @@ import csv, sys, argparse
 #####
 
 parser = argparse.ArgumentParser(description="This software is to help you find the correct contacts.")
-parser.add_argument('-input-csv', dest="seed_data_file",
+parser.add_argument('-input', dest="seed_data_file",
                     help="[ REQUIRED ] Name of CSV file. This file provides the original data.")
 parser.add_argument('-state', dest="state",
                     help="[ REQUIRED ] State abbreviation, not full state name.")
@@ -15,7 +15,7 @@ parser.add_argument('-company', dest="company",
                     help="[ optional ] Company name.")
 parser.add_argument('-type', dest="type",
                     help="[ REQUIRED ] Type, must be either 'Independent' or 'Captive'.")
-parser.add_argument('-output-name', dest="output_file",
+parser.add_argument('-output', dest="output_file",
                     help="[ optional ] Output file name. Defaults to 'output.csv'.")
 
 #####
