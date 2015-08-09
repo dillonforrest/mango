@@ -10,6 +10,7 @@ INPUT_FILE = sys.argv[1]
 INPUT_STATE_ABBR = sys.argv[2]
 INPUT_COMPANY = sys.argv[3]
 INPUT_TYPE = sys.argv[4]
+INPUT_DESIRED_OUTPUT_FILENAME = sys.argv[5]
 
 states = {
   'AK': 'Alaska',
@@ -126,9 +127,8 @@ input = {
 
 for i, row in enumerate(csv_rows):
   if is_qualified(input, row):
-    campaign_num = "-- no campaign number --" if row[indexes['campaign_num']] == "" else "WHOOPS, campaign num is present!"
-    print "-------"
-    print "row number", i + 1
-    print row[0], row[1], row[indexes['phone']], row[indexes['email']], row[indexes['state']], row[indexes['company']], row[indexes['type']], campaign_num
-    print "-------"
-    print ""
+    row[indexes['campaign_num']] = 3
+
+with open(INPUT_DESIRED_OUTPUT_FILENAME, 'wb') as output_file:
+  writer = csv.writer(output_file)
+  writer.writerows(csv_rows)
