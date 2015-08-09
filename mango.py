@@ -90,7 +90,7 @@ indexes['email'] = 4
 indexes['state'] = 6
 indexes['company'] = 8
 indexes['type'] = 9
-indexes['campaign_num'] = 11
+indexes['campaign_num'] = 10
 
 
 #####
@@ -125,7 +125,7 @@ input = {
 }
 
 for i, row in enumerate(csv_rows):
-  if is_qualified(input1, row):
+  if is_qualified(input, row):
     campaign_num = "-- no campaign number --" if row[indexes['campaign_num']] == "" else "WHOOPS, campaign num is present!"
     print "-------"
     print "row number", i + 1
