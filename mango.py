@@ -125,9 +125,16 @@ input = {
   'type': INPUT_TYPE
 }
 
-for i, row in enumerate(csv_rows):
-  if is_qualified(input, row):
-    row[indexes['campaign_num']] = 3
+if INPUT_TYPE == "Independent":
+  campaign_limit = 3
+else:
+  campaign_limit = 1
+
+qualified_rows = [row for row in csv_rows if is_qualified(input, row)]
+
+rows_to_write = qualified_rows[:campaign_limit]
+for r in rows_to_write:
+  r[indexes['campaign_num']] = 3
 
 with open(INPUT_DESIRED_OUTPUT_FILENAME, 'wb') as output_file:
   writer = csv.writer(output_file)
