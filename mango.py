@@ -7,14 +7,12 @@ import csv, sys, argparse
 #####
 
 parser = argparse.ArgumentParser(description="This software is to help you find the correct contacts.")
-parser.add_argument('-input', dest="seed_data_file",
+parser.add_argument('-input', dest="seed_data_file", required=True
                     help="[ REQUIRED ] Name of CSV file. This file provides the original data.")
-parser.add_argument('-state', dest="state",
-                    help="[ REQUIRED ] State abbreviation, not full state name.")
-parser.add_argument('-company', dest="company",
-                    help="[ optional ] Company name.")
-parser.add_argument('-type', dest="type",
-                    help="[ REQUIRED ] Type, must be either 'Independent' or 'Captive'.")
+parser.add_argument('-targets', dest="targets_file", required=True
+                    help="[ REQUIRED ] File name of CSV containing the contacts you want to find.")
+parser.add_argument('-number', dest="campaign_number", required=True
+                    help="[ REQUIRED ] The campaign number to be added for the target contacts.")
 parser.add_argument('-output', dest="output_file",
                     help="[ optional ] Output file name. Defaults to 'output.csv'.")
 
@@ -84,18 +82,18 @@ states = {
   'WY': 'Wyoming'
 }
 
-inputs.state = states[inputs.state]
-
 #####
 # setup
 ####
 
-csv_file = csv.reader(open(inputs.seed_data_file))
+csv_seed_data_file = csv.reader(open(inputs.seed_data_file))
+csv_targets_file = csv.reader(open(inputs.targets_file))
 
-csv_rows = []
-for row in csv_file:
-  if row[0] != "":
-    csv_rows.append(row)
+def erase_empty_rows(rows):
+  return [ row for row in rows where row[0] != "" ]
+
+csv_rows = erase_empty_rows(csv_seed_data_file)
+targets_rows = erase_empty_rows(csv_targets_file)
 
 indexes = {}
 indexes['phone'] = 3
@@ -131,28 +129,30 @@ def is_qualified(target, test):
     contact_info_exists(target, test) and \
     not_previous_campaign(target, test)
 
-if inputs.type == "Independent":
-  campaign_limit = 3
-else:
-  campaign_limit = 1
 
-qualified_rows = [row for row in csv_rows if is_qualified(inputs, row)]
+rows_to_write = []
 
-rows_to_write = qualified_rows[:campaign_limit]
-for r in rows_to_write:
-  r[indexes['campaign_num']] = 3
+def find_qualified_rows(inputs):
+  qualified_rows = [row for row in csv_rows if is_qualified(inputs, row)]
 
-for i, r in enumerate(qualified_rows):
-  print "------ qualified row --------"
-  print "name", r[0], r[1]
-  print "state", r[indexes['state']]
-  print "company", r[indexes['company']]
-  print "type", r[indexes['type']]
-  print "email", r[indexes['email']]
-  print "phone", r[indexes['phone']]
-  print "campaign_num", r[indexes['campaign_num']]
-  print "------ end row --------"
-  print ""
+  if inputs.type == "Independent":
+    campaign_limit = 3
+  else:
+    campaign_limit = 1
+
+  rows_to_write.merge(qualified_rows[:campaign_limit])
+
+for target in targets_rows:
+  find_qualified_rows(target)
+
+for r in rows_to_write[:60]:
+  r[indexes['campaign_num']] = inputs.campaign_number
+
+if len(rows_to_write) == 0
+  print "didn't find any qualified rows :("
+else
+  print 'found %(count_total)d qualified rows.' % {'count_total': len(rows_to_write)}
+  print 'wrote campaign number %(campaign_num)d for %(count_written)d rows.' % {'campaign_num': inputs.campaign_num, 'count_written': len(rows_to_write[:60])}
 
 with open(inputs.output_file, 'wb') as output_file:
   writer = csv.writer(output_file)
