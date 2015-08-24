@@ -116,7 +116,9 @@ target_idx = {
 ####
 
 def same_state(target, test):
-  return target[target_idx['state']] == test[indexes['state']]
+  stateAbbr = target[target_idx['state']]
+  state = states[stateAbbr]
+  return state == test[indexes['state']]
 
 def correct_company_and_type(target, test):
   if target[target_idx['type']] == "Independent":
@@ -161,10 +163,10 @@ for r in rows_to_write[:60]:
   r[indexes['campaign_num']] = inputs.campaign_number
 
 if len(rows_to_write) == 0:
-  print "didn't find any qualified rows :("
+  print "didn't find any qualified rows :( contact dillon to see if this software is broken"
 else:
   print 'found %(count_total)d qualified rows.' % {'count_total': len(rows_to_write)}
-  print 'wrote campaign number %(campaign_num)d for %(count_written)d rows.' % {'campaign_num': inputs.campaign_num, 'count_written': len(rows_to_write[:60])}
+  print 'wrote campaign number %(campaign_num)s for %(count_written)d rows.' % {'campaign_num': inputs.campaign_number, 'count_written': len(rows_to_write[:60])}
 
 output_file = inputs.output_file or "output.csv"
 with open(output_file, 'wb') as output_file:
