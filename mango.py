@@ -7,11 +7,11 @@ import csv, sys, argparse
 #####
 
 parser = argparse.ArgumentParser(description="This software is to help you find the correct contacts.")
-parser.add_argument('-input', dest="seed_data_file", required=True
+parser.add_argument('-input', dest="seed_data_file", required=True,
                     help="[ REQUIRED ] Name of CSV file. This file provides the original data.")
-parser.add_argument('-targets', dest="targets_file", required=True
+parser.add_argument('-targets', dest="targets_file", required=True,
                     help="[ REQUIRED ] File name of CSV containing the contacts you want to find.")
-parser.add_argument('-number', dest="campaign_number", required=True
+parser.add_argument('-number', dest="campaign_number", required=True,
                     help="[ REQUIRED ] The campaign number to be added for the target contacts.")
 parser.add_argument('-output', dest="output_file",
                     help="[ optional ] Output file name. Defaults to 'output.csv'.")
@@ -90,7 +90,7 @@ csv_seed_data_file = csv.reader(open(inputs.seed_data_file))
 csv_targets_file = csv.reader(open(inputs.targets_file))
 
 def erase_empty_rows(rows):
-  return [ row for row in rows where row[0] != "" ]
+  return [ row for row in rows if row[0] != "" ]
 
 csv_rows = erase_empty_rows(csv_seed_data_file)
 targets_rows = erase_empty_rows(csv_targets_file)
@@ -103,19 +103,26 @@ indexes['company'] = 8
 indexes['type'] = 9
 indexes['campaign_num'] = 10
 
+target_idx = {
+  'state': 1,
+  'company': 2,
+  'type': 3,
+  'already_completed': 4
+}
+
 
 #####
 # qualifiers
 ####
 
 def same_state(target, test):
-  return target.state == test[indexes['state']]
+  return target[target_idx['state']] == test[indexes['state']]
 
 def correct_company_and_type(target, test):
-  if target.type == "Independent":
+  if target[target_idx['type']] == "Independent":
     return test[indexes['type']] == "Independent"
   else:
-    return target.company == test[indexes['company']]
+    return target[target_idx['company']] == test[indexes['company']]
 
 def contact_info_exists(target, test):
   return test[indexes['phone']] != "" and test[indexes['email']] != ""
@@ -132,28 +139,34 @@ def is_qualified(target, test):
 
 rows_to_write = []
 
-def find_qualified_rows(inputs):
-  qualified_rows = [row for row in csv_rows if is_qualified(inputs, row)]
+def find_qualified_rows(target):
+  qualified_rows = [row for row in csv_rows if is_qualified(target, row)]
 
-  if inputs.type == "Independent":
+  if target[target_idx['type']] == "Independent":
     campaign_limit = 3
   else:
     campaign_limit = 1
 
-  rows_to_write.merge(qualified_rows[:campaign_limit])
+  return qualified_rows[:campaign_limit]
+
+def is_valid_target(target):
+  return target[0] != "" and target[target_idx['already_completed']] == ""
 
 for target in targets_rows:
-  find_qualified_rows(target)
+  if is_valid_target(target):
+    to_add = find_qualified_rows(target)
+    rows_to_write += to_add
 
 for r in rows_to_write[:60]:
   r[indexes['campaign_num']] = inputs.campaign_number
 
-if len(rows_to_write) == 0
+if len(rows_to_write) == 0:
   print "didn't find any qualified rows :("
-else
+else:
   print 'found %(count_total)d qualified rows.' % {'count_total': len(rows_to_write)}
   print 'wrote campaign number %(campaign_num)d for %(count_written)d rows.' % {'campaign_num': inputs.campaign_num, 'count_written': len(rows_to_write[:60])}
 
-with open(inputs.output_file, 'wb') as output_file:
+output_file = inputs.output_file or "output.csv"
+with open(output_file, 'wb') as output_file:
   writer = csv.writer(output_file)
   writer.writerows(csv_rows)
