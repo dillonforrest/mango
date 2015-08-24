@@ -15,6 +15,8 @@ parser.add_argument('-number', dest="campaign_number", required=True,
                     help="[ REQUIRED ] The campaign number to be added for the target contacts.")
 parser.add_argument('-output', dest="output_file",
                     help="[ optional ] Output file name. Defaults to 'output.csv'.")
+parser.add_argument('-results', dest="results_file",
+                    help="[ optional ] Results file name. Defaults to 'results.csv'. Useful for checking this code's accuracy.")
 
 #####
 # init
@@ -107,7 +109,8 @@ target_idx = {
   'state': 1,
   'company': 2,
   'type': 3,
-  'already_completed': 4
+  'already_completed': 4,
+  'number_qualified': 5
 }
 
 
@@ -157,18 +160,27 @@ def is_valid_target(target):
 for target in targets_rows:
   if is_valid_target(target):
     to_add = find_qualified_rows(target)
-    rows_to_write += to_add
+    if len(to_add) > 0:
+      target[target_idx['number_qualified']] = len(to_add)
+      rows_to_write += to_add
 
 for r in rows_to_write[:60]:
   r[indexes['campaign_num']] = inputs.campaign_number
-
-if len(rows_to_write) == 0:
-  print "didn't find any qualified rows :( contact dillon to see if this software is broken"
-else:
-  print 'found %(count_total)d qualified rows.' % {'count_total': len(rows_to_write)}
-  print 'wrote campaign number %(campaign_num)s for %(count_written)d rows.' % {'campaign_num': inputs.campaign_number, 'count_written': len(rows_to_write[:60])}
 
 output_file = inputs.output_file or "output.csv"
 with open(output_file, 'wb') as output_file:
   writer = csv.writer(output_file)
   writer.writerows(csv_rows)
+
+results_file = inputs.results_file or "results.csv"
+with open(results_file, 'wb') as results_file:
+  writer = csv.writer(results_file)
+  writer.writerows(targets_rows)
+
+if len(rows_to_write) == 0:
+  print "didn't find any qualified rows D: contact dillon to see if this software is broken"
+else:
+  print 'found %(count_total)d qualified rows.' % {'count_total': len(rows_to_write)}
+  print 'wrote campaign number %(campaign_num)s for %(count_written)d rows.' % {'campaign_num': inputs.campaign_number, 'count_written': len(rows_to_write[:60])}
+  print 'check %(results_file)s to see the final results.' % {'results_file': inputs.results_file or "results.csv"}
+print "done :D"
