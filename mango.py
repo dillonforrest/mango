@@ -123,6 +123,12 @@ def same_state(target, test):
   state = states[stateAbbr]
   return state == test[indexes['state']]
 
+def not_ignoring(target, test):
+  for cell in test:
+    if cell == "NA" or cell == "NLE":
+      return False
+  return True
+
 def correct_company_and_type(target, test):
   if target[target_idx['type']] == "Independent":
     return test[indexes['type']] == "Independent"
@@ -137,6 +143,7 @@ def not_previous_campaign(target, test):
 
 def is_qualified(target, test):
   return same_state(target, test) and \
+    not_ignoring(target, test) and \
     correct_company_and_type(target, test) and \
     contact_info_exists(target, test) and \
     not_previous_campaign(target, test)
