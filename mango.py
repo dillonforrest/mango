@@ -180,7 +180,7 @@ for target in targets_rows:
       target[target_idx['number_qualified']] = len(to_add)
       rows_to_write += to_add
 
-for r in rows_to_write[:50]:
+for r in rows_to_write[:100]:
   r[indexes['campaign_num']] = inputs.campaign_number
 
 output_file = inputs.output_file or "output.csv"
@@ -197,6 +197,6 @@ if len(rows_to_write) == 0:
   print "didn't find any qualified rows D: contact dillon to see if this software is broken"
 else:
   print 'found %(count_total)d qualified rows.' % {'count_total': len(rows_to_write)}
-  print 'wrote campaign number %(campaign_num)s for %(count_written)d rows.' % {'campaign_num': inputs.campaign_number, 'count_written': len(rows_to_write[:50])}
+  print 'wrote campaign number %(campaign_num)s for %(count_written)d rows.' % {'campaign_num': inputs.campaign_number, 'count_written': len(rows_to_write[:100])}
   print 'check %(results_file)s to see the final results.' % {'results_file': inputs.results_file or "results.csv"}
 print "done :D"
