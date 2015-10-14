@@ -2,6 +2,15 @@
 
 import csv, sys, argparse
 
+
+####
+# utils
+####
+
+def exists(str):
+  return str.strip() != ""
+
+
 #####
 # parse args
 #####
@@ -92,7 +101,7 @@ csv_seed_data_file = csv.reader(open(inputs.seed_data_file))
 csv_targets_file = csv.reader(open(inputs.targets_file))
 
 def erase_empty_rows(rows):
-  return [ row for row in rows if row[0] != "" ]
+  return [ row for row in rows if exists(row[0]) ]
 
 csv_rows = erase_empty_rows(csv_seed_data_file)
 targets_rows = erase_empty_rows(csv_targets_file)
@@ -136,10 +145,10 @@ def correct_company_and_type(target, test):
     return target[target_idx['company']] == test[indexes['company']]
 
 def contact_info_exists(target, test):
-  return test[indexes['phone']] != "" and test[indexes['email']] != ""
+  return exists(test[indexes['phone']]) and exists(test[indexes['email']])
 
 def not_previous_campaign(target, test):
-  return test[indexes['campaign_num']] == ""
+  return not exists(test[indexes['campaign_num']])
 
 def is_qualified(target, test):
   return same_state(target, test) and \
@@ -162,7 +171,7 @@ def find_qualified_rows(target):
   return qualified_rows[:campaign_limit]
 
 def is_valid_target(target):
-  return target[0] != "" and target[target_idx['already_completed']] == ""
+  return exists(target[0]) and not exists(target[target_idx['already_completed']])
 
 for target in targets_rows:
   if is_valid_target(target):
