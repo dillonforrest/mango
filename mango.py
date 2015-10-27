@@ -113,6 +113,7 @@ indexes['state'] = 6
 indexes['company'] = 8
 indexes['type'] = 9
 indexes['campaign_num'] = 10
+indexes['lead_source'] = 14
 
 target_idx = {
   'state': 1,
@@ -149,18 +150,26 @@ def contact_info_exists(target, test):
 def not_previous_campaign(target, test):
   return not exists(test[indexes['campaign_num']])
 
-def is_qualified(target, test):
+def not_already_qualified(test, rows_to_write):
+  phone = test[indexes['phone']]
+  for r in rows_to_write:
+    if r[indexes['phone']] == phone:
+      return False
+  return True
+
+def is_qualified(target, test, rows_to_write):
   return same_state(target, test) and \
     not_ignoring(target, test) and \
     correct_company_and_type(target, test) and \
     contact_info_exists(target, test) and \
-    not_previous_campaign(target, test)
+    not_previous_campaign(target, test) and \
+    not_already_qualified(test, rows_to_write)
 
 
 rows_to_write = []
 
-def find_qualified_rows(target):
-  qualified_rows = [row for row in csv_rows if is_qualified(target, row)]
+def find_qualified_rows(target, rows_to_write):
+  qualified_rows = [row for row in csv_rows if is_qualified(target, row, rows_to_write)]
 
   if target[target_idx['type']] == "Independent":
     campaign_limit = 3
@@ -172,14 +181,29 @@ def find_qualified_rows(target):
 def is_valid_target(target):
   return exists(target[0]) and not exists(target[target_idx['already_completed']])
 
-for target in targets_rows:
-  if is_valid_target(target):
-    to_add = find_qualified_rows(target)
-    if len(to_add) > 0:
-      target[target_idx['number_qualified']] = len(to_add)
-      rows_to_write += to_add
+def comb_targets_once(targets_rows, rows_to_write):
+  out = []
+  for target in targets_rows:
+    if is_valid_target(target):
+      to_add = find_qualified_rows(target, rows_to_write)
+      if len(to_add) > 0:
+        target[target_idx['number_qualified']] = len(to_add)
+        out += to_add
+  return out
 
-for r in rows_to_write[:50]:
+qualified = comb_targets_once(targets_rows, rows_to_write)
+loops = 0
+while len(qualified) > 0:
+  print "loops", loops
+  print "len(qualified)", len(qualified)
+  rows_to_write += qualified
+  qualified = comb_targets_once(targets_rows, rows_to_write)
+  loops += 1
+
+for r in filter(lambda row: row[indexes['lead_source']] == "LeadGenius", rows_to_write)[:(50/2)]:
+  r[indexes['campaign_num']] = inputs.campaign_number
+
+for r in filter(lambda row: row[indexes['lead_source']] == "ZoomInfo", rows_to_write)[:(50/2)]:
   r[indexes['campaign_num']] = inputs.campaign_number
 
 output_file = inputs.output_file or "output.csv"
@@ -195,7 +219,7 @@ with open(results_file, 'wb') as results_file:
 if len(rows_to_write) == 0:
   print "didn't find any qualified rows D: contact dillon to see if this software is broken, or check formatting of input csv files"
 else:
-  print 'found %(count_total)d qualified rows.' % {'count_total': len(rows_to_write)}
-  print 'wrote campaign number %(campaign_num)s for %(count_written)d rows.' % {'campaign_num': inputs.campaign_number, 'count_written': len(rows_to_write[:50])}
+  count_written = len(filter(lambda row: row[indexes['campaign_num']] == inputs.campaign_number, rows_to_write))
+  print 'wrote campaign number %(campaign_num)s for %(count_written)d rows.' % {'campaign_num': inputs.campaign_number, 'count_written': count_written}
   print 'check %(results_file)s to see the final results.' % {'results_file': inputs.results_file or "results.csv"}
 print "done :D"
