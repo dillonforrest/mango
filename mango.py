@@ -128,8 +128,7 @@ target_idx = {
 ####
 
 def same_state(target, test):
-  stateAbbr = target[target_idx['state']]
-  state = states[stateAbbr]
+  state = target[target_idx['state']]
   return state == test[indexes['state']]
 
 def not_ignoring(target, test):
