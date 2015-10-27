@@ -193,7 +193,7 @@ with open(results_file, 'wb') as results_file:
   writer.writerows(targets_rows)
 
 if len(rows_to_write) == 0:
-  print "didn't find any qualified rows D: contact dillon to see if this software is broken"
+  print "didn't find any qualified rows D: contact dillon to see if this software is broken, or check formatting of input csv files"
 else:
   print 'found %(count_total)d qualified rows.' % {'count_total': len(rows_to_write)}
   print 'wrote campaign number %(campaign_num)s for %(count_written)d rows.' % {'campaign_num': inputs.campaign_number, 'count_written': len(rows_to_write[:50])}
