@@ -97,8 +97,8 @@ states = {
 # setup
 ####
 
-csv_seed_data_file = csv.reader(open(inputs.seed_data_file))
-csv_targets_file = csv.reader(open(inputs.targets_file))
+csv_seed_data_file = csv.reader(open(inputs.seed_data_file, 'rU'))
+csv_targets_file = csv.reader(open(inputs.targets_file, 'rU'))
 
 def erase_empty_rows(rows):
   return [ row for row in rows if exists(row[0]) ]
@@ -201,9 +201,11 @@ while len(qualified) > 0:
   loops += 1
 
 for r in filter(lambda row: row[indexes['lead_source']] == "LeadGenius", rows_to_write)[:(50/2)]:
+  print "LeadGenius"
   r[indexes['campaign_num']] = inputs.campaign_number
 
 for r in filter(lambda row: row[indexes['lead_source']] == "ZoomInfo", rows_to_write)[:(50/2)]:
+  print "ZoomInfo"
   r[indexes['campaign_num']] = inputs.campaign_number
 
 output_file = inputs.output_file or "output.csv"
